@@ -4,7 +4,7 @@ certifi==2021.10.8
 charset-normalizer==2.0.12
 et-xmlfile==1.1.0
 idna==3.3
-numpy==1.22.3
+numpy==1.21.6
 openpyxl==3.0.9
 pandas==1.4.2
 pyinstaller==5.0.1
