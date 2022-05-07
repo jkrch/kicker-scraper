@@ -1,4 +1,4 @@
-name: Package Application with PyInstaller for Windows
+name: Package Application with PyInstaller for Linux
 
 on:
   push:
@@ -13,12 +13,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: PyInstaller Windows
-      uses: JackMcKew/pyinstaller-action-windows@main
+    - name: PyInstaller Linux
+      uses: JackMcKew/pyinstaller-action-linux@main
       with:
         path: src
 
     - uses: actions/upload-artifact@v2
       with:
-        name: kicker-scraper_windows
-        path: src/dist/windows
+        name: kicker-scraper_linux
+        path: src/dist/linux
