@@ -7,6 +7,17 @@ from pandas import DataFrame, ExcelWriter, read_json
 from copy import deepcopy
 
 
+def check_internet():
+    """Check if internet and/or kicker.de is working."""
+    url = "https://www.kicker.de"
+    timeout = 10
+    try:
+        requests.get(url, timeout=timeout)
+        return True
+    except (requests.ConnectionError, requests.Timeout):
+        return False
+
+
 def get_teams(league, season):
     """Returns list with all teams in a league in a season.
 

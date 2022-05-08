@@ -3,9 +3,9 @@ import sys
 from PySide2 import QtCore
 from PySide2.QtWidgets import (
     QMainWindow, QWidget, QComboBox, QApplication, QVBoxLayout, QHBoxLayout,
-    QProgressBar, QPushButton)
+    QProgressBar, QPushButton, QLabel)
 
-from scraper import main as scraper_main
+import scraper
 
 
 class MainWindow(QMainWindow):
@@ -102,6 +102,15 @@ class MainWindow(QMainWindow):
         self.progress_bar.setValue(0)
 
     def button_ok_clicked(self):
+
+        # Check internet
+        # TODO: Move to worker/scraper since no internet is needed when the
+        #       season is already scraped
+        if not scraper.check_internet():
+            self.internet_window = InternetWidget()
+            self.internet_window.show()
+            return 0
+
         self.button_ok.setEnabled(False)
         self.combobox_league.setEnabled(False)
         self.combobox_season.setEnabled(False)
@@ -124,6 +133,20 @@ class MainWindow(QMainWindow):
             self.combobox_season.setEnabled(True)
 
 
+class InternetWidget(QWidget):
+    """Window that pops up if there is no internet or kicker.de can not be
+    reached.
+    """
+
+    def __init__(self):
+        super(InternetWidget, self).__init__()
+        self.setWindowFlags(QtCore.Qt.WindowCloseButtonHint)
+        self.setWindowTitle("Kicker Scraper")
+        vlayout = QVBoxLayout()
+        vlayout.addWidget(QLabel("Internet/kicker.de not working!"))
+        self.setLayout(vlayout)
+
+
 class Worker(QtCore.QThread):
     """ Worker class for scraping the seasonal stats, building the home/away
     tables and writing the tables to Excel.
@@ -138,7 +161,7 @@ class Worker(QtCore.QThread):
 
     def run(self):
         """ Get stats and save to disk."""
-        scraper_main(self.league, self.season, self.length,
+        scraper.main(self.league, self.season, self.length,
                      self.updateProgress)
 
 
