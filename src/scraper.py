@@ -7,39 +7,12 @@ from pandas import DataFrame, ExcelWriter, read_json
 from copy import deepcopy
 
 
-# def get_seasons_with_stats(league='bundesliga'):
-#     """Returns list with all seasons in a league that have statistics.
-
-#     Parameters:
-#         league : str, default='bundesliga'
-#             The league.
-
-#     Returns:
-#         seasons : list
-#             The name of the seasons.
-#     """
-#     # Iterate over seasons
-#     while True:
-#         # TODO: Automatically find latest completed season
-#         first = 2022
-#         second = 21
-#         season = str(first) + '-' + str(second)
-
-#         # Get site as soup
-#         url = 'https://www.kicker.de/bundesliga/spieltag/' + season + '/1'
-#         reqs = requests.get(url)
-#         soup = BeautifulSoup(reqs.text, 'html.parser')
-
-#         # Get_matchday_urls
-#         get_matchday_urls(1, league='bundesliga', season=season)
-
-
 def get_teams(league, season):
     """Returns list with all teams in a league in a season.
 
     Parameters:
         league : str
-            The league.
+            Name of the league.
         season : str
             The season.
 
@@ -54,7 +27,8 @@ def get_teams(league, season):
     soup = BeautifulSoup(reqs.text, 'html.parser')
 
     # Get list with all teams
-    class_= 'kick__t__a__l kick__table--ranking__teamname kick__table--ranking__index kick__respt-m-w-160'
+    class_ = ('kick__t__a__l kick__table--ranking__teamname kick__table--'
+              'ranking__index kick__respt-m-w-160')
     teams = soup.find_all('td', class_=class_)
     teams = [team.text.replace('\n', '') for team in teams]
 
@@ -66,7 +40,7 @@ def get_matchday_urls(league, season, matchday):
 
     Parameters:
         league : str
-            The league.
+            Name of the league.
         season : str
             The season.
         matchday : str or int
@@ -108,14 +82,14 @@ def get_matchday_stats(league, season, matchday):
 
     Parameters:
         league : str
-            The league.
+            Name of the league.
         season : str
             The season.
         matchday : str or int
             The number of the match day.
 
     Returns:
-        matchday_stats : list of dataframe
+        matchday_stats : list
             The game stats of all matches.
     """
     matchday_stats = []
@@ -137,8 +111,8 @@ def get_matchday_stats(league, season, matchday):
         list_data_grid = data_grid.find_all('div', class_='kick__stats-bar')
 
         # Getting the data grid
-        data_grid = soup.find(
-            'div', class_='kick__data-grid--max-width kick__data-grid--max-width')
+        data_grid = soup.find('div', class_=('kick__data-grid--max-width kick_'
+                                             '_data-grid--max-width'))
 
         # Getting list of data grid rows
         list_data_grid = data_grid.find_all('div', class_='kick__stats-bar')
@@ -166,16 +140,18 @@ def get_matchday_stats(league, season, matchday):
     return matchday_stats
 
 
-def get_season_stats(league, season, progressbar=None):
+def get_season_stats(league, season, length, qt_signal=None):
     """Returns all game stats from a whole season.
 
     Parameters:
         league : str
-            The league.
+            Name of the league.
         season : str
             The season.
-        progressbar : QProgressBar, default=None
-            Progress bar to update.
+        length : int
+            Length of the season.
+        qt_signal : QtCore.Signal, default=None
+            Signal that returns matchday.
 
     Returns:
         season_stats : list of list of dataframe
@@ -188,8 +164,8 @@ def get_season_stats(league, season, progressbar=None):
         n_matchdays = 38
     for matchday in range(1, n_matchdays + 1):
         print(matchday)
-        if progressbar:
-            progressbar.setValue(matchday)
+        if qt_signal:
+            qt_signal.emit(matchday)
         season_stats.append(get_matchday_stats(league, season, matchday))
     return season_stats
 
@@ -199,7 +175,7 @@ def get_stats_home_away(league, season, season_stats):
 
     Parameters:
         league : str
-            The league.
+            Name of the league.
         season : str
             The season.
         season_stats : list
@@ -255,10 +231,10 @@ def add_sum_mean_std(stats):
     """Returns stats with added sum, mean and standard derivation to stats.
 
     Parameters:
-        stats : dict
+        stats : list
             All statistics.
     Returns:
-        stats : list
+        stats_extra : list
             All statistics with added sum, mean, std.
     """
     stats_extra = deepcopy(stats)
@@ -273,17 +249,19 @@ def add_sum_mean_std(stats):
     return stats_extra
 
 
-def main(league, season, progressbar=None):
+def main(league, season, length, qt_signal=None):
     """Scrape or load stats of a season in a league and write to excel file
     stats wise.
 
     Parameters:
         league : str
-            The league.
+            Name of the league.
         season : str
             The season.
-        progressbar : QProgressBar, default=None
-            Progress bar to update.
+        length : int
+            Length of the season.
+        qt_signal : QtCore.Signal, default=None
+            Signal that returns matchday.
     """
 
     # Get season stats from disk or scrape and write to disk using JSON
@@ -293,12 +271,12 @@ def main(league, season, progressbar=None):
     file_name = league + '_' + season
     file_path = os.path.join(dir_name, file_name) + '.json'
     if os.path.isfile(file_path):
-        if progressbar:
-            progressbar.setValue(progressbar.maximum() - 1)
+        if qt_signal:
+            qt_signal.emit(length)
         with (open(file_path, 'r')) as f:
             season_stats = json.load(f)
     else:
-        season_stats = get_season_stats(league, season, progressbar)
+        season_stats = get_season_stats(league, season, length, qt_signal)
         with (open(file_path, 'w')) as f:
             f.write(json.dumps(season_stats, indent=len(season_stats)))
 
@@ -319,7 +297,8 @@ def main(league, season, progressbar=None):
     sheet_names = [key.replace('/', ' oder ') for key in keys]
     with ExcelWriter(file_path) as writer:
         for key, sheet_name in zip(keys, sheet_names):
-            stats_home[key].to_excel(writer, sheet_name=sheet_name)
-            startrow = len(stats_home[key]) + 2
-            stats_away[key].to_excel(writer, sheet_name=sheet_name,
-                                     startrow=startrow)
+            stats_home_extra[key].to_excel(writer, sheet_name=sheet_name)
+            startrow = len(stats_home_extra[key]) + 2
+            stats_away_extra[key].to_excel(writer, sheet_name=sheet_name,
+                                           startrow=startrow)
+    qt_signal.emit(length + 2)
