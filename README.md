@@ -1,6 +1,6 @@
 # Kicker Scraper
 
-A small desktop application that scrapes football (soccer) game stats from [kicker.de](https://www.kicker.de/) and divides them into home/away tables for a whole season. The results are saved in Excel files.
+A small desktop application that scrapes football (soccer) game stats from [kicker.de](https://www.kicker.de/) and divides them into home/away tables for a whole season. The resulting home/away tables are saved in a MS Excel spreadsheet.
 
 Leagues (and seasons) supported:
 - Bundesliga (2013-14 – 2021-22)
