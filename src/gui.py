@@ -33,7 +33,6 @@ class MainWindow(QMainWindow):
         self.combobox_league.currentTextChanged.connect(
             self.combobox_league_changed)
         hlayout_league = QHBoxLayout()
-        # hlayout_league.addWidget(QLabel("League:"))
         hlayout_league.addWidget(self.combobox_league)
         vlayout.addLayout(hlayout_league)
 
@@ -59,11 +58,10 @@ class MainWindow(QMainWindow):
         self.combobox_season.currentIndexChanged.connect(
             self.combobox_season_changed)
         hlayout_season = QHBoxLayout()
-        # hlayout_season.addWidget(QLabel("Season:"))
         hlayout_season.addWidget(self.combobox_season)
         vlayout.addLayout(hlayout_season)
 
-        # progress_bar
+        # Progress bar
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 34 + 2)
         self.progress_bar.setTextVisible(False)
@@ -102,7 +100,6 @@ class MainWindow(QMainWindow):
         self.progress_bar.setValue(0)
 
     def button_ok_clicked(self):
-
         # Check internet
         # TODO: Move to worker/scraper since no internet is needed when the
         #       season is already scraped
@@ -134,16 +131,14 @@ class MainWindow(QMainWindow):
 
 
 class InternetWidget(QWidget):
-    """Window that pops up if there is no internet or kicker.de can not be
-    reached.
-    """
+    """Window that pops up if internet or kicker.de not working."""
 
     def __init__(self):
         super(InternetWidget, self).__init__()
         self.setWindowFlags(QtCore.Qt.WindowCloseButtonHint)
         self.setWindowTitle("Kicker Scraper")
         vlayout = QVBoxLayout()
-        vlayout.addWidget(QLabel("Internet/kicker.de not working!"))
+        vlayout.addWidget(QLabel("Internet or kicker.de down!"))
         self.setLayout(vlayout)
 
 
@@ -160,7 +155,6 @@ class Worker(QtCore.QThread):
         self.length = length
 
     def run(self):
-        """ Get stats and save to disk."""
         scraper.main(self.league, self.season, self.length,
                      self.updateProgress)
 
