@@ -7,3 +7,8 @@ Leagues (and seasons) supported:
 - La Liga (2018-19 – 2021-22)
 - Premier League (2018-19 – 2021-22)
 - Serie A (2018-19 – 2021-22)
+
+## Executables
+
+- [Windows](https://github.com/jkrch/kicker-scraper-test/releases/download/v0.1.0-alpha/kicker-scraper_windows.zip) (build with [PyInstaller for GitHub Actions](https://github.com/JackMcKew/pyinstaller-action-windows))
+
