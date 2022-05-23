@@ -1,9 +1,7 @@
-import os
 import requests
-import json
 
 from bs4 import BeautifulSoup
-from pandas import DataFrame, ExcelWriter, read_json
+from pandas import DataFrame, read_json
 from copy import deepcopy
 
 
@@ -200,16 +198,22 @@ def get_stats_home_away(league, season, season_stats):
     """
     # Get keys for dict
     keys = list(read_json(season_stats[0][0]).index)
-    keys[2] += ' in km'
-    keys[6] += ' in %'
-    keys[7] += ' in %'
-    keys[8] += ' in %'
+
+    # Change keys for some stats
+    subs = {
+        'Laufleistung': 'Laufleistung in km',
+        'Passquote': 'Passquote in %',
+        'Ballbesitz': 'Ballbesitz in %',
+        'Zweikampfquote': 'Zweikampfquote in %'
+    }
+    keys = [subs.get(key, key) for key in keys]
 
     # Create empty dicts
     stats_home = dict(zip(keys, [None] * len(keys)))
     stats_away = dict(zip(keys, [None] * len(keys)))
 
     # Get team names
+    # TODO: Find offline solution
     teams = get_teams(league, season)
 
     # Iterate over keys/stats
@@ -258,58 +262,3 @@ def add_sum_mean_std(stats):
         df.loc['Standardabweichung'] = df.iloc[:n_rows, :n_cols].std()
         df['Standardabweichung'] = df.iloc[:n_rows, :n_cols].std(axis=1)
     return stats_extra
-
-
-def main(league, season, length, qt_signal=None):
-    """Scrape or load stats of a season in a league and write to excel file
-    stats wise.
-
-    Parameters:
-        league : str
-            Name of the league.
-        season : str
-            The season.
-        length : int
-            Length of the season.
-        qt_signal : QtCore.Signal, default=None
-            Signal that returns matchday.
-    """
-
-    # Get season stats from disk or scrape and write to disk using JSON
-    dir_name = 'json'
-    if not os.path.isdir(dir_name):
-        os.mkdir(dir_name)
-    file_name = league + '_' + season
-    file_path = os.path.join(dir_name, file_name) + '.json'
-    if os.path.isfile(file_path):
-        if qt_signal:
-            qt_signal.emit(length)
-        with (open(file_path, 'r')) as f:
-            season_stats = json.load(f)
-    else:
-        season_stats = get_season_stats(league, season, length, qt_signal)
-        with (open(file_path, 'w')) as f:
-            f.write(json.dumps(season_stats, indent=len(season_stats)))
-
-    # Create home and away tables
-    stats_home, stats_away = get_stats_home_away(league, season, season_stats)
-
-    # Add sum, mean, standard derivation
-    stats_home_extra = add_sum_mean_std(stats_home)
-    stats_away_extra = add_sum_mean_std(stats_away)
-
-    # Write stats to Excel file
-    dir_name = 'excel'
-    if not os.path.isdir(dir_name):
-        os.mkdir(dir_name)
-    file_name = league + '_' + season + '.xlsx'
-    file_path = os.path.join(dir_name, file_name)
-    keys = stats_home.keys()
-    sheet_names = [key.replace('/', ' oder ') for key in keys]
-    with ExcelWriter(file_path) as writer:
-        for key, sheet_name in zip(keys, sheet_names):
-            stats_home_extra[key].to_excel(writer, sheet_name=sheet_name)
-            startrow = len(stats_home_extra[key]) + 2
-            stats_away_extra[key].to_excel(writer, sheet_name=sheet_name,
-                                           startrow=startrow)
-    qt_signal.emit(length + 2)
