@@ -36,10 +36,6 @@ class MainWindow(QMainWindow):
         self.worker = Worker(self)
         self.worker.updateProgress.connect(self.update_progressbar)
 
-        # # Window to ask for scraping
-        # self.window_download = DownloadWidget(self)
-        # self.window_download.downloadAgain.connect(self.worker.start())
-
     def init_vars(self):
 
         # League
@@ -210,30 +206,6 @@ class MainWindow(QMainWindow):
         else:
             self.button_ok.setEnabled(True)
         # self.worker.folder = self.folder
-
-    def write_to_excel(self):
-
-        # Load season stats
-        with open(self.dir_json, 'r') as f:
-            season_stats = json.load(f)
-
-        # Create home/away tables and add sum, mean, standard derivation
-        stats_home, stats_away = scraper.get_stats_home_away(
-            self.league, self.season, season_stats)
-        stats_home = scraper.add_sum_mean_std(stats_home)
-        stats_away = scraper.add_sum_mean_std(stats_away)
-
-        # Write stats to Excel file
-        keys = stats_home.keys()
-        sheet_names = [key.replace('/', ' oder ') for key in keys]
-        with ExcelWriter(self.path_excel) as writer:
-            for key, sheet_name in zip(keys, sheet_names):
-                stats_home[key].to_excel(writer, sheet_name=sheet_name)
-                stats_away[key].to_excel(writer, sheet_name=sheet_name,
-                                         startrow=len(stats_home[key]) + 2)
-
-        # Update progress bar
-        self.progress_bar.setValue(self.length + 2)
 
 
 class InternetWidget(QWidget):
