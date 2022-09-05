@@ -4,10 +4,6 @@ on:
   push:
     branches:
     - main
-    - dev
-  pull_request:
-    branches:
-    - main
 
 jobs:
   build:
@@ -19,9 +15,9 @@ jobs:
     - name: PyInstaller Linux
       uses: JackMcKew/pyinstaller-action-linux@main
       with:
-        path: src
+        path: .
 
     - uses: actions/upload-artifact@v2
       with:
         name: kicker-scraper_linux
-        path: src/dist/linux
+        path: ./dist/linux
