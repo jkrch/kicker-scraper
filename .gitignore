@@ -1,7 +1,3 @@
-# Excel and Downloads (JSON) folders
-src/Excel/
-src/Downloads/
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
