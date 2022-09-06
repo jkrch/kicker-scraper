@@ -15,9 +15,9 @@ jobs:
     - name: PyInstaller Linux
       uses: JackMcKew/pyinstaller-action-linux@main
       with:
-        path: .
+        path: src
 
     - uses: actions/upload-artifact@v2
       with:
         name: kicker-scraper_linux
-        path: ./dist/linux
+        path: src/dist/linux
