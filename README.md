@@ -10,5 +10,7 @@ Leagues (and seasons) supported:
 
 ## Executables
 
+### v0.1.0-alpha
+
 - [Windows](https://github.com/jkrch/kicker-scraper-test/releases/download/v0.1.0-alpha/kicker-scraper_windows.zip) (build with [PyInstaller for GitHub Actions](https://github.com/JackMcKew/pyinstaller-action-windows))
 
