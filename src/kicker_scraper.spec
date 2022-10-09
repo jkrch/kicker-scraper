@@ -4,7 +4,7 @@
 block_cipher = None
 
 
-a = Analysis(['gui.py'],
+a = Analysis(['kicker_scraper_gui.py'],
              pathex=['/home/j/Code/kicker-scraper/src'],
              binaries=[],
              datas=[],
